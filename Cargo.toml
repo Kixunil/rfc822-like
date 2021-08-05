@@ -1,0 +1,28 @@
+[package]
+name = "rfc822-like"
+version = "0.1.0"
+authors = ["Martin Habovstiak <martin.habovstiak@gmail.com>"]
+edition = "2018"
+license = "MITNFA"
+description = "RFC822-like encoding used in conrol files implemented for serde"
+repository = "https://github.com/Kixunil/rfc822-like"
+homepage = "https://github.com/Kixunil/rfc822-like"
+keywords = ["rfc822", "debian", "serde"]
+readme = "README.md"
+categories = ["parser-implementations", "encoding"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+# Used for testing against Debian-based OS, do not depend on this!
+live_test = []
+
+[dependencies]
+serde = "1.0.126"
+thiserror = "1.0.25"
+unicode-segmentation = "1.7.1"
+fmt2io = "0.2.0"
+
+[dev-dependencies]
+serde_derive = "1.0.126"
+quickcheck = "1.0.3"
