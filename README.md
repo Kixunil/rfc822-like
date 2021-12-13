@@ -20,8 +20,6 @@ If you need it to be faster or just want to have fun improving its performance I
 
 The API is currently not set in stone and may change over time.
 Basic steps to minimize the impact of changes were taken (e.g. encapsulation of `Error` type).
-The crate also currently lacks serialization but it will be implemented eventually.
-Feel free to send PRs!
 
 
 ## Example

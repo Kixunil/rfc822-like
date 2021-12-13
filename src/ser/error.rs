@@ -1,3 +1,6 @@
+//! Error types related to serialization.
+
+/// Error returned when serializing fails.
 #[derive(Debug, thiserror::Error)]
 #[error(transparent)]
 pub struct Error {

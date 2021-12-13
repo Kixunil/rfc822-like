@@ -22,7 +22,7 @@
 //! Feel free to send PRs!
 //!
 //! Check [`Deserializer`] type for deserialization API reference and examples.
-//! Check [`Seserializer`] type for serialization API reference and examples.
+//! Check [`Serializer`] type for serialization API reference and examples.
 
 pub mod de;
 pub mod ser;
@@ -35,10 +35,21 @@ use std::{io, fmt};
 use std::path::{Path, PathBuf};
 use de::error::ReadFileError;
 
+/// Deserialize a value from a reader.
+///
+/// This deserializes `T` using data returned by `reader`.
 pub fn from_reader<T: for<'a> Deserialize<'a>, R: io::BufRead>(reader: R) -> Result<T, de::Error> {
     T::deserialize(Deserializer::new(reader))
 }
 
+/// Reads the file and deserializes the value from it.
+///
+/// This is a convenience function for opening the file, making `BufReader` and using it in
+/// `from_reader`. It's most useful when dealing with Debian control files stored in the
+/// system/source code.
+///
+/// Note that instead of [`std::io::Error`] this returns [`ReadFileError`] which carries
+/// information about path so that the error message is more useful.
 pub fn from_file<T: for<'a> Deserialize<'a>, P: AsRef<Path> + Into<PathBuf>>(path: P) -> Result<T, ReadFileError> {
     let file = match std::fs::File::open(&path) {
         Ok(file) => file,
@@ -48,23 +59,38 @@ pub fn from_file<T: for<'a> Deserialize<'a>, P: AsRef<Path> + Into<PathBuf>>(pat
     T::deserialize(Deserializer::new(reader)).map_err(|error| ReadFileError::Load { path: path.into(), error, })
 }
 
+/// Deserializes a value from bytes that are *not* guaranteed to be UTF-8.
+///
+/// Non-UTF8 data will obviously still fail but you don't have to do the check explicitly.
 pub fn from_bytes<'a, T: Deserialize<'a>>(mut bytes: &'a [u8]) -> Result<T, de::Error> {
     T::deserialize(Deserializer::new(&mut bytes))
 }
 
+/// Deserializes a value from a string.
 pub fn from_str<'a, T: Deserialize<'a>>(s: &'a str) -> Result<T, de::Error> {
     from_bytes(s.as_bytes())
 }
 
+/// Writes the `value` to [`std::fmt::Write`]r.
+///
+/// This is useful if you want a guarantee that the value written is UTF-8 encoded.
 pub fn to_fmt_writer<T: Serialize, W: fmt::Write>(writer: W, value: &T) -> Result<(), ser::Error> {
     value.serialize(Serializer::new(writer))
 }
 
+///  Writes the `value` to [`std::io::Write`]r.
+///
+///  The `Write` trait from `std::io` is more common than `fmt` so a convenience function is
+///  provided that writes to `std::io` instead. This is mainly useful for writing into files.
 pub fn to_writer<T: Serialize, W: io::Write>(writer: W, value: &T) -> Result<(), ser::Error> {
     fmt2io::write(writer, |writer| to_fmt_writer(writer, value).map(Ok).or_else(ser::Error::to_fmt))
         .map_err(ser::error::ErrorInternal::IoWriteFailed)?
 }
 
+/// Serializes the `value` into memory.
+///
+/// This allocates the string and writes the value into it. It may caue multiple reallocations so
+/// it's better to write to writers directly if possible.
 pub fn to_string<T: Serialize>(value: &T) -> Result<String, ser::Error> {
     let mut result = String::new();
     to_fmt_writer(&mut result, value)?;

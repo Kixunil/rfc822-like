@@ -48,6 +48,7 @@ impl<W> Serializer<W> where W: Write {
         }
     }
 
+    /// Causes lines longer than 80 characters to be wrapped on word boundaries.
     pub fn wrap_long_lines(mut self, wrap: bool) -> Self {
         self.wrap_long_lines = wrap;
         self
@@ -188,6 +189,10 @@ impl<W> serde::Serializer for NonSeqSerializer<W> where W: Write {
     }
 }
 
+/// Serializer used for serializing sequences of records.
+///
+/// This type is internal and should not be used directly. If you need to refer to it it's best to use
+/// `Serializer::SerializeSeq`.
 pub struct SeqSerializer<Writer: Write> {
     output: Writer,
     wrap_long_lines: bool,

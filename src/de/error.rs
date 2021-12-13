@@ -1,3 +1,5 @@
+//! Error types related to deserialization of RFC822-like format.
+
 use std::fmt;
 use std::io;
 
@@ -29,10 +31,23 @@ impl serde::de::Error for Error {
 #[error(transparent)]
 pub struct Error(#[from] ErrorInner);
 
+/// Error returned when opening a file and subsequent deserialization fail.
 #[derive(Debug, thiserror::Error)]
 pub enum ReadFileError {
+    /// Variant returned when a file couldn't be opened.
     #[error("failed to open file {path} for reading")]
-    Open { path: std::path::PathBuf, #[source] error: std::io::Error, },
+    Open {
+        /// Path to file that was accessed.
+        path: std::path::PathBuf,
+        /// The reason why opening failed.
+        #[source] error: std::io::Error,
+    },
+    /// Variant returned when read or deserialization fail.
     #[error("failed to load file {path}")]
-    Load { path: std::path::PathBuf,  #[source] error: Error, },
+    Load {
+        /// Path to the file that could not be loaded.
+        path: std::path::PathBuf,
+        /// The reason why loading failed.
+        #[source] error: Error,
+    },
 }
