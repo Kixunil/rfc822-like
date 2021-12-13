@@ -123,17 +123,9 @@ impl<W> serde::Serializer for Serializer<W> where W: Write {
     }
 }
 
-#[doc(hidden)]
-#[deprecated = "This was published by accident and should not be used. It'll be removed without replacement."]
-pub use internal::NonSeqSerializer;
-
-mod internal {
-use super::*;
-
-#[doc(hidden)]
-pub struct NonSeqSerializer<Writer: Write> {
-    pub(crate) writer: Writer,
-    pub(crate) wrap_long_lines: bool,
+struct NonSeqSerializer<Writer: Write> {
+    writer: Writer,
+    wrap_long_lines: bool,
 }
 
 impl<W> serde::Serializer for NonSeqSerializer<W> where W: Write {
@@ -196,7 +188,6 @@ impl<W> serde::Serializer for NonSeqSerializer<W> where W: Write {
         fn serialize_struct_variant(self, name: &'static str, variant_index: u32, variant: &'static str, len: usize) -> Result<Self::SerializeStructVariant>;
     }
 }
-}
 
 /// Serializer used for serializing sequences of records.
 ///
@@ -216,7 +207,7 @@ impl<W> ser::SerializeSeq for SeqSerializer<W> where W: Write {
         if !self.is_empty {
             writeln!(self.output).map_err(Error::failed_write)?;
         }
-        value.serialize(internal::NonSeqSerializer { writer: &mut self.output, wrap_long_lines: self.wrap_long_lines })
+        value.serialize(NonSeqSerializer { writer: &mut self.output, wrap_long_lines: self.wrap_long_lines })
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
