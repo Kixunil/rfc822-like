@@ -480,6 +480,10 @@ impl<W> serde::Serializer for FieldSerializer<W> where W: Write {
         value.serialize(self)
     }
 
+    fn serialize_unit_variant(self, _name: &'static str, _variant_index: u32, variant: &'static str) -> Result<(), Self::Error> {
+        self.serialize_str(variant)
+    }
+
     unsupported_types! {
         fn serialize_bool(self, v: bool) -> Result<()>;
         fn serialize_i8(self, v: i8) -> Result<()>;
@@ -496,7 +500,6 @@ impl<W> serde::Serializer for FieldSerializer<W> where W: Write {
         fn serialize_bytes(self, v: &[u8]) -> Result<()>;
         fn serialize_unit(self) -> Result<()>; 
         fn serialize_unit_struct(self, name: &'static str) -> Result<()>; 
-        fn serialize_unit_variant(self, name: &'static str, variant_index: u32, variant: &'static str) -> Result<()>;
         fn serialize_newtype_variant<T>(self, name: &'static str, variant_index: u32, variant: &'static str, value: &T) -> Result<()>
         where
             T: ?Sized + Serialize;
@@ -579,6 +582,10 @@ impl<W> serde::Serializer for StringSerializer<W> where W: Write {
         value.serialize(self)
     }
 
+    fn serialize_unit_variant(self, _name: &'static str, _variant_index: u32, variant: &'static str) -> Result<(), Self::Error> {
+        self.serialize_str(variant)
+    }
+
     unsupported_types! {
         fn serialize_bool(self, v: bool) -> Result<()>;
         fn serialize_i8(self, v: i8) -> Result<()>;
@@ -599,7 +606,6 @@ impl<W> serde::Serializer for StringSerializer<W> where W: Write {
             T: ?Sized + Serialize;
         fn serialize_unit(self) -> Result<()>; 
         fn serialize_unit_struct(self, name: &'static str) -> Result<()>; 
-        fn serialize_unit_variant(self, name: &'static str, variant_index: u32, variant: &'static str) -> Result<()>;
         fn serialize_newtype_variant<T>(self, name: &'static str, variant_index: u32, variant: &'static str, value: &T) -> Result<()>
         where
             T: ?Sized + Serialize;
@@ -928,5 +934,25 @@ mod tests {
         write!(writer, "invented bitcoin").unwrap();
         writer.finish().unwrap();
         assert_eq!(output, "satoshi nakamoto\n .\n invented bitcoin\n");
+    }
+
+    #[test]
+    fn serialize_unit_variant() {
+        #[derive(serde_derive::Serialize)]
+        #[serde(rename_all = "snake_case")]
+        enum Foo {
+            Bar,
+        }
+
+        #[derive(serde_derive::Serialize)]
+        #[serde(rename_all = "PascalCase")]
+        struct Baz {
+            foo: Foo,
+        }
+
+        let mut out = String::new();
+        let baz = Baz { foo: Foo::Bar, };
+        baz.serialize(Serializer::new(&mut out)).expect("Failed to serialize");
+        assert_eq!(out, "Foo: bar\n");
     }
 }
