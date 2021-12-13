@@ -315,10 +315,14 @@ impl<'a, 'de> serde::Deserializer<'de> for ValueDeserializer<'a> {
         visitor.visit_seq(StrSeq(self.0.split(',')))
     }
 
+    fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Self::Error> where V: Visitor<'de> {
+        visitor.visit_some(self)
+    }
+
     // TODO: deserialize seq as comma-separated values
     serde::forward_to_deserialize_any! {
         bool i8 i16 i32 i64 i128 u8 u16 u32 u64 u128 f32 f64 char
-        bytes byte_buf option unit unit_struct newtype_struct tuple
+        bytes byte_buf unit unit_struct newtype_struct tuple
         tuple_struct map struct enum identifier ignored_any
     }
 }
@@ -618,5 +622,37 @@ mod tests {
             let deserializer = super::Deserializer::new(std::io::BufReader::new(file));
             <Vec<Record>>::deserialize(deserializer).unwrap_or_else(|error| panic!("Failed to parse {}: {:?}", entry.path().display(), error));
         }
+    }
+
+    #[test]
+    fn test_option_none() {
+        #[derive(serde_derive::Deserialize)]
+        #[serde(rename_all = "PascalCase")]
+        struct Record {
+            name: String,
+            description: Option<String>,
+        }
+
+        let mut input = b"Name: bitcoin" as &[u8];
+        let deserializer = super::Deserializer::new(&mut input);
+        let package = Record::deserialize(deserializer).unwrap();
+        assert_eq!(package.name, "bitcoin");
+        assert!(package.description.is_none());
+    }
+
+    #[test]
+    fn test_option_some() {
+        #[derive(serde_derive::Deserialize)]
+        #[serde(rename_all = "PascalCase")]
+        struct Record {
+            name: String,
+            description: Option<String>,
+        }
+
+        let mut input = b"Name: bitcoin\nDescription: The Internet of Money" as &[u8];
+        let deserializer = super::Deserializer::new(&mut input);
+        let package = Record::deserialize(deserializer).unwrap();
+        assert_eq!(package.name, "bitcoin");
+        assert_eq!(package.description, Some("The Internet of Money".to_owned()));
     }
 }
