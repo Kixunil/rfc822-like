@@ -24,6 +24,8 @@
 //! Check [`Deserializer`] type for deserialization API reference and examples.
 //! Check [`Serializer`] type for serialization API reference and examples.
 
+#![deny(missing_docs)]
+
 pub mod de;
 pub mod ser;
 
