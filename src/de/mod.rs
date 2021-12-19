@@ -6,7 +6,7 @@
 //! It is mainly meant for quick look at `apt` metadata, however if you have a use case that needs
 //! more than that I will be happy to accept a PR.
 
-use serde::de::{Visitor, MapAccess, SeqAccess, DeserializeSeed};
+use serde::de::{Visitor, MapAccess, SeqAccess, DeserializeSeed, IntoDeserializer};
 use std::io;
 use error::ErrorInner;
 pub use error::Error;
@@ -319,11 +319,23 @@ impl<'a, 'de> serde::Deserializer<'de> for ValueDeserializer<'a> {
         visitor.visit_some(self)
     }
 
+    fn deserialize_enum<V>(
+        self,
+        _name: &'static str,
+        _variants: &'static [&'static str],
+        visitor: V,
+    ) -> Result<V::Value, Self::Error>
+    where
+        V: Visitor<'de>,
+    {
+        visitor.visit_enum(self.0.into_deserializer())
+    }
+
     // TODO: deserialize seq as comma-separated values
     serde::forward_to_deserialize_any! {
         bool i8 i16 i32 i64 i128 u8 u16 u32 u64 u128 f32 f64 char
         bytes byte_buf unit unit_struct newtype_struct tuple
-        tuple_struct map struct enum identifier ignored_any
+        tuple_struct map struct identifier ignored_any
     }
 }
 
@@ -654,5 +666,25 @@ mod tests {
         let package = Record::deserialize(deserializer).unwrap();
         assert_eq!(package.name, "bitcoin");
         assert_eq!(package.description, Some("The Internet of Money".to_owned()));
+    }
+
+    #[test]
+    fn test_deserialize_unit_variant() {
+        #[derive(serde_derive::Deserialize, PartialEq, Eq, Debug)]
+        #[serde(rename_all = "snake_case")]
+        enum Foo {
+            Bar,
+        }
+
+        #[derive(serde_derive::Deserialize)]
+        #[serde(rename_all = "PascalCase")]
+        struct Baz {
+            foo: Foo,
+        }
+
+        let mut input = b"Foo: bar\n" as &[u8];
+        let deserializer = super::Deserializer::new(&mut input);
+        let baz = Baz::deserialize(deserializer).unwrap();
+        assert_eq!(baz.foo, Foo::Bar);
     }
 }
