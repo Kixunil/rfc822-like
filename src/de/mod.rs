@@ -136,7 +136,7 @@ impl<'a, 'de, R: io::BufRead> SeqAccess<'de> for Seq<'a, R> {
             return Ok(None);
         }
 
-        match seed.deserialize(SingleRecordDeserializer::new(&mut self.0)) {
+        match seed.deserialize(SingleRecordDeserializer::new(self.0)) {
             Ok(value) => Ok(Some(value)),
             Err(_) if self.0.empty => Ok(None),
             Err(error) => Err(error),
