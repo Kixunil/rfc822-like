@@ -429,7 +429,7 @@ fn write_wraped<W: Write>(mut out: W, line: &str) -> std::fmt::Result {
             written = 1;
         }
 
-        if !(word.trim().len() == 0 && written == 1) {
+        if !(word.trim().is_empty() && written == 1) {
             out.write_str(word)?;
             written += word_len;
         }
@@ -621,6 +621,10 @@ impl<W> serde::Serializer for StringSerializer<W> where W: Write {
 
 #[cfg(test)]
 mod tests {
+    // We want writes to be nice and guarantee whole string is written in a single call,
+    // so we need to ignore this nitpicky lint.
+    #![allow(clippy::write_with_newline)]
+
     use super::Serializer;
     use serde::Serialize;
     use serde::Serializer as SerdeSerializer;

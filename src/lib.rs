@@ -85,7 +85,7 @@ pub fn to_fmt_writer<T: Serialize, W: fmt::Write>(writer: W, value: &T) -> Resul
 ///  The `Write` trait from `std::io` is more common than `fmt` so a convenience function is
 ///  provided that writes to `std::io` instead. This is mainly useful for writing into files.
 pub fn to_writer<T: Serialize, W: io::Write>(writer: W, value: &T) -> Result<(), ser::Error> {
-    fmt2io::write(writer, |writer| to_fmt_writer(writer, value).map(Ok).or_else(ser::Error::to_fmt))
+    fmt2io::write(writer, |writer| to_fmt_writer(writer, value).map(Ok).or_else(ser::Error::into_fmt))
         .map_err(ser::error::ErrorInternal::IoWriteFailed)?
 }
 

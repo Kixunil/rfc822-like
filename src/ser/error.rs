@@ -47,7 +47,7 @@ impl Error {
         ErrorInternal::FmtWriteFailed.into()
     }
 
-    pub(crate) fn to_fmt(self) -> Result<Result<(), Self>, std::fmt::Error> {
+    pub(crate) fn into_fmt(self) -> Result<Result<(), Self>, std::fmt::Error> {
         if let ErrorInternal::FmtWriteFailed = self.internal {
             Err(std::fmt::Error)
         } else {
