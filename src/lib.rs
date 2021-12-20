@@ -119,6 +119,7 @@ mod tests {
             TestResult::from_bool(deserialized == map)
         }
 
+        #[cfg(rfc822_like_test_reversible_map_vec_serialization)]
         fn reversible_map_vec_serialization(map: HashMap<String, Vec<String>>) -> TestResult {
             for (key, value) in &map {
                 if key.is_empty() || key.contains(&[':', '\n', '\0'] as &[_]) || key.trim() != key || value.is_empty() {
