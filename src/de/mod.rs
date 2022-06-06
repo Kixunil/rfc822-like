@@ -92,7 +92,7 @@ pub struct Deserializer<R: io::BufRead> {
 }
 
 impl<'de, R: io::BufRead> Deserializer<R> {
-    /// Creates a `Deserializer` from bufferred reader.
+    /// Creates a `Deserializer` from buffered reader.
     pub fn new(reader: R) -> Self {
         Deserializer {
             state: DeserializerState::new(reader),
@@ -305,7 +305,7 @@ impl<'a, 'de> serde::Deserializer<'de> for ValueDeserializer<'a> {
     }
 
     fn deserialize_string<V>(self, visitor: V) -> Result<V::Value, Self::Error> where V: Visitor<'de> {
-        // Possible optimization: we could instad have a visitor that points to appropriate
+        // Possible optimization: we could instead have a visitor that points to appropriate
         // position inside the buffer and removes the beginning if called here, or turns it into a
         // slice if called above.
         self.deserialize_str(visitor)
