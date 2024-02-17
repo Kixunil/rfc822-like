@@ -91,7 +91,7 @@ pub struct Deserializer<R: io::BufRead> {
     state: DeserializerState<R>,
 }
 
-impl<'de, R: io::BufRead> Deserializer<R> {
+impl<R: io::BufRead> Deserializer<R> {
     /// Creates a `Deserializer` from buffered reader.
     pub fn new(reader: R) -> Self {
         Deserializer {
