@@ -207,6 +207,7 @@ impl<W> ser::SerializeSeq for SeqSerializer<W> where W: Write {
         if !self.is_empty {
             writeln!(self.output).map_err(Error::failed_write)?;
         }
+        self.is_empty = false;
         value.serialize(NonSeqSerializer { writer: &mut self.output, wrap_long_lines: self.wrap_long_lines })
     }
 
