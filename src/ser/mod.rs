@@ -793,6 +793,21 @@ mod tests {
     }
 
     #[test]
+    fn struct_seq() {
+        #[derive(serde_derive::Serialize)]
+        #[serde(rename_all = "PascalCase")]
+        struct Foo {
+            bar: &'static str,
+            baz: &'static str,
+        }
+
+        let mut out = String::new();
+        vec![Foo { bar: "bar value 1", baz: "baz value 1" }, Foo { bar: "bar value 2", baz: "baz value 2" }]
+            .serialize(Serializer::new(&mut out)).expect("Failed to serialize");
+        assert_eq!(out, "Bar: bar value 1\nBaz: baz value 1\n\nBar: bar value 2\nBaz: baz value 2\n");
+    }
+
+    #[test]
     fn field_writer_empty() {
         let mut output = String::new();
         let mut writer = super::FieldWriter::new(&mut output, false);
