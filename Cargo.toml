@@ -21,7 +21,7 @@ live_test = []
 serde = "1.0.126"
 thiserror = "1.0.25"
 unicode-segmentation = "1.7.1"
-fmt2io = "0.2.0"
+fmt2io = "1.0.0"
 
 [dev-dependencies]
 serde_derive = "1.0.126"
