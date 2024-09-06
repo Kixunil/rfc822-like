@@ -83,7 +83,8 @@ pub fn to_fmt_writer<T: Serialize, W: fmt::Write>(writer: W, value: &T) -> Resul
 ///  Writes the `value` to [`std::io::Write`]r.
 ///
 ///  The `Write` trait from `std::io` is more common than `fmt` so a convenience function is
-///  provided that writes to `std::io` instead. This is mainly useful for writing into files.
+///  provided that writes to `std::io` instead. This is mainly useful for writing into files. Note
+///  however that this function doesn't perform any buffering so you need to take care of that!
 pub fn to_writer<T: Serialize, W: io::Write>(writer: W, value: &T) -> Result<(), ser::Error> {
     fmt2io::write(writer, |writer| to_fmt_writer(writer, value).map(Ok).or_else(ser::Error::into_fmt))
         .map_err(ser::error::ErrorInternal::IoWriteFailed)?
@@ -91,7 +92,7 @@ pub fn to_writer<T: Serialize, W: io::Write>(writer: W, value: &T) -> Result<(),
 
 /// Serializes the `value` into memory.
 ///
-/// This allocates the string and writes the value into it. It may caue multiple reallocations so
+/// This allocates the string and writes the value into it. It may cause multiple reallocations so
 /// it's better to write to writers directly if possible.
 pub fn to_string<T: Serialize>(value: &T) -> Result<String, ser::Error> {
     let mut result = String::new();
